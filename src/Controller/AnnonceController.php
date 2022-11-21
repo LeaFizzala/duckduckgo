@@ -56,6 +56,9 @@ class AnnonceController extends AbstractController
     public function show(AnnonceRepository $annonceRepository, int $id) : Response{
         $annonce = $annonceRepository->find($id);
 
+        if(!$annonce){
+            return new Response($this->createNotFoundException());
+        }
         return new Response($this->twig->render('annonce/show.html.twig', [
             'title' => 'Meilleures annonces de Duck Duck Go',
             'annonce' => $annonce,
