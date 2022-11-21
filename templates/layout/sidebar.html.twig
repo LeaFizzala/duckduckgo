@@ -1,0 +1,9 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    {{ include("_inc/nav.html.twig") }}
+    {{ include("_inc/sidebar.html.twig") }}
+    <div class="container-fluid">
+        {% block content %}{% endblock %}
+    </div>
+{% endblock %}
