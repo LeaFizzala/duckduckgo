@@ -6,7 +6,7 @@
     {% endblock %}
 
     {% block main %}
-        {% block content %}
+        {% block contenu %}
             <div class="container">
                 <h1>Liste des annonces</h1>
                 <div class="row">
@@ -28,6 +28,39 @@
                             </div>
                         </div>
                     {% endfor %}
+                </div>
+            </div>
+        {% endblock %}
+
+        {% block subtitle %} Gérer les annonces!{% endblock %}
+        {% block content %}
+            <div class="container">
+                <h1>Gérer les annonces</h1>
+                <div class="row">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for annonce in annonces %}
+                            <tr>
+                                <td>{{ annonce.title }}</td>
+                                <td>
+                                    <a href="{{ path('app_annonce_edit', {id: annonce.id}) }}" class="btn btn-secondary">Éditer</a>
+                                    <form method="post" action="{{ path('app_annonce_delete', {id: annonce.id}) }}">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button class="btn btn-danger">Supprimer</button>
+                                    </form>
+
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
                 </div>
             </div>
         {% endblock %}

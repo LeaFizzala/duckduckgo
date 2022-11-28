@@ -2,13 +2,17 @@
 
 namespace App\Controller;
 
+
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Twig\Environment;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Annonce;
 use App\Repository\AnnonceRepository;
+use App\Form\AnnonceType;
+use Doctrine\ORM\EntityManagerInterface;
 
 class AnnonceController extends AbstractController
 {
@@ -68,25 +72,58 @@ class AnnonceController extends AbstractController
     /**
      * @Route("/annonces/new")
      */
-    public function new(ManagerRegistry $doctrine) // depuis Symfony 6, nous sommes obligé d'utiliser l'autowiring
+    public function new(Request $request, EntityManagerInterface $em) // depuis Symfony 6, nous sommes obligé d'utiliser l'autowiring
     {
         $annonce = new Annonce();
-        $annonce
-            ->setTitle('Canard Tichaud')
-            ->setDescription('Pokémon')
-            ->setPrice(100)
-            ->setStatus(Annonce::STATUS_BAD)
-            ->setSold(false)
-        ;
+       // utilisation du formulaire pour créer une nouvelle Annonce
+        $form = $this->createForm(AnnonceType::class, $annonce);
+        $form->handleRequest($request);
 
-        // On récupère l'EntityManager
-        $em = $doctrine->getManager();
-        // On « persiste » l'entité
-        $em->persist($annonce);
-        // On envoie tout ce qui a été persisté avant en base de données
-        $em->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($annonce);
+            $em->flush();
+            return $this->redirectToRoute('app_annonce_index');
+        }
 
-        die ( $annonce->getTitle() . ' annonce bien créée');
+        return $this->render('annonce/new.html.twig', [
+            'annonce' => $annonce,
+            'form' => $form->createView()
+        ]);
+
+
     }
+
+    /**
+     * @Route("/annonce/{id}/edit", methods={"POST", "GET"})
+     */
+    public function edit(Annonce $annonce, Request $request, EntityManagerInterface $em)
+    {
+        $form = $this->createForm(AnnonceType::class, $annonce);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            return $this->redirectToRoute('app_annonce_index');
+        }
+
+        return $this->render('annonce/edit.html.twig', [
+            'annonce' => $annonce,
+            'form' => $form->createView()
+        ]);
+    }
+    /**
+     * @Route("/annonce/{id}", methods="DELETE")
+     */
+    public function delete(Annonce $annonce, EntityManagerInterface $em)
+    {
+        // on supprime l'annonce de l'ObjetManager
+        $em->remove($annonce);
+        // en envoie la requête en base de données
+        $em->flush();
+        return $this->redirectToRoute('app_annonce_index');
+    }
+
+
+
 
 }

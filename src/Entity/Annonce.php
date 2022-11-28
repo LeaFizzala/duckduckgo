@@ -3,11 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\AnnonceRepository;
+use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Cocur\Slugify\Slugify;
 
 #[ORM\Entity(repositoryClass: AnnonceRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Annonce
 {
 
@@ -32,22 +34,23 @@ class Annonce
     #[ORM\Column(nullable: true)]
     private ?int $price = null;
 
-
-
     #[ORM\Column]
     private ?int $status = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    private $createdAt;
 
     #[ORM\Column (options: ['default' => false])]
     private ?bool $sold = false;
 
-    //constructeur
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private $modifiedAt;
+
+   /* //constructeur
     public function __construct()
     {
         $this->createdAt = new \DateTime();
-    }
+    }*/
 
 
     public function getId(): ?int
@@ -120,12 +123,47 @@ class Annonce
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    /**
+     * @param mixed $createdAt
+     */
+    public function setCreatedAt($createdAt): void
     {
         $this->createdAt = $createdAt;
-
-        return $this;
     }
+
+    /**
+     * @param mixed $modifiedAt
+     */
+    public function setModifiedAt($modifiedAt): void
+    {
+        $this->modifiedAt = $modifiedAt;
+    }
+
+
+
+    #[ORM\PrePersist]
+    public function prePersist()
+    {
+
+        $this->createdAt = new \DateTime();
+    }
+
+    #[ORM\PreUpdate]
+    public function preUpdate()
+    {
+        $this->modifiedAt = new \DateTime();
+    }
+
+
+    /**
+     * @return \DateTimeInterface|null
+     */
+    public function getModifiedAt(): ?\DateTimeInterface
+    {
+        return $this->modifiededAt;
+    }
+
+
 
 
 }
