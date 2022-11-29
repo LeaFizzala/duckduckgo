@@ -9,6 +9,10 @@
         {% block contenu %}
             <div class="container">
                 <h1>Liste des annonces</h1>
+                <div class="pagination">
+                    {{ knp_pagination_render(annonces) }}
+                </div>
+
                 <div class="row">
                     {% for annonce in annonces %}
                         <div class="col-md-4">

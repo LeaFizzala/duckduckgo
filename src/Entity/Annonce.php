@@ -7,6 +7,7 @@ use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Cocur\Slugify\Slugify;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnnonceRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -28,7 +29,12 @@ class Annonce
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable: false)]
+    #[Assert\Length(
+        min: 30,
+        minMessage: 'The description must be at least {{ limit }} characters long',
+
+    )]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
@@ -45,6 +51,15 @@ class Annonce
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $modifiedAt;
+
+    #[ORM\Column(length: 255)]
+    private ?string $slug;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(
+    protocols: [ 'https'],
+    )]
+    private ?string $imageUrl = null;
 
    /* //constructeur
     public function __construct()
@@ -146,6 +161,8 @@ class Annonce
     {
 
         $this->createdAt = new \DateTime();
+        $slugify = new Slugify();
+        $this->slug = $slugify->slugify($this->title);
     }
 
     #[ORM\PreUpdate]
@@ -161,6 +178,36 @@ class Annonce
     public function getModifiedAt(): ?\DateTimeInterface
     {
         return $this->modifiededAt;
+    }
+
+    public function getSlug(): ?string
+    {
+        if (!$this->slug) {
+            $this->setSlug($this->title);
+        }
+        return $this->slug;
+
+    }
+
+    public function setSlug(string $slug): self
+    {
+        $slugify = new Slugify();
+        $this->slug = $slugify->slugify($slug);
+
+        return $this;
+
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): self
+    {
+        $this->imageUrl = $imageUrl;
+
+        return $this;
     }
 
 

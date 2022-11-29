@@ -30,6 +30,7 @@ class AnnonceType extends AbstractType
             ])
             ->add('createdAt', DateType::class)
             ->add('sold')
+            ->add('imageUrl')
 
         ;
     }

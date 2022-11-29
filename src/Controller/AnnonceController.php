@@ -13,6 +13,7 @@ use App\Entity\Annonce;
 use App\Repository\AnnonceRepository;
 use App\Form\AnnonceType;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 class AnnonceController extends AbstractController
 {
@@ -33,14 +34,41 @@ class AnnonceController extends AbstractController
     }
 
     /**
+     * @Route(
+     *  "/annonce/{slug}-{id}",
+     *  requirements={"slug": "[a-z0-9\-]*", "id": "\d+"}
+     * )
+     * @return Response
+     */
+    public function showBySlug(string $slug, int $id, AnnonceRepository $annonceRepository): Response
+    {
+        $annonce = $annonceRepository->findOneBy([
+            'slug' => $slug,
+            'id' => $id
+        ]);
+
+        if (!$annonce) {
+            return $this->createNotFoundException();
+        }
+
+        return $this->render('annonce/show.html.twig', [
+            'annonce' => $annonce,
+        ]);
+    }
+
+
+    /**
      * @Route("/annonces")
      */
 
-    public function index(AnnonceRepository $annonceRepository) : Response
+    public function index(Request $request, PaginatorInterface $paginator, AnnonceRepository $annonceRepository) : Response
     {
 
-        $annonces = $annonceRepository->findAllNotSold();
-
+        $annonces = $paginator->paginate(
+            $annonceRepository->findAllNotSold(),
+            $request->query->getInt('page',1),
+            12
+        );
 
         return new Response($this->twig->render('annonce/index.html.twig', [
             'title' => 'Meilleures annonces de Duck Duck Go',
